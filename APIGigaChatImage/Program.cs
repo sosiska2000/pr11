@@ -12,10 +12,11 @@ namespace APIGigaChatImage
     public class Program
     {
         public static string ClientId = "019b2b50-ff41-77e2-b0f5-23e0ba29e4ef";
-        public static string AutorizationKey = "MDE5YjJiNTAtZmY0MS03N2UyLWIwZjUtMjNlMGJhMjllNGVmOmZiYjEwNTdmLWM2ZmUtNDAwYS04NThjLTNlMTA2NjRmYTVkMA==";
+        public static string AutorizationKey = "MDE5YjJiNTAtZmY0MS03N2UyLWIwZjUtMjNlMGJhMjllNGVmOjdlMmI5OGMyLWRkMDAtNDQ1OC04NjdiLTUwMGUxMzNjNjIxMQ==";
 
         static async Task Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
             Console.WriteLine("Генератор изображений GigaChat");
             Console.WriteLine();
 
@@ -31,7 +32,7 @@ namespace APIGigaChatImage
                     return;
                 }
 
-                Console.WriteLine($"Токен получен: {token.Substring(0, 30)}...");
+                Console.WriteLine($"Токен получен: {token.Substring(0, Math.Min(30, token.Length))}...");
                 Console.WriteLine();
 
                 // Шаг 2: Генерация изображения
@@ -52,31 +53,59 @@ namespace APIGigaChatImage
 
                 if (!string.IsNullOrEmpty(imageId))
                 {
-                    Console.WriteLine($"Изображение сгенерировано! ID: {imageId}");
+                    Console.WriteLine($"✓ Изображение сгенерировано! ID: {imageId}");
 
-                    // Дополнительно: скачиваем изображение
-                    Console.WriteLine("Хотите скачать изображение? (y/n)");
-                    string answer = Console.ReadLine();
+                    // Скачиваем изображение
+                    Console.WriteLine();
+                    Console.WriteLine("Скачивание изображения...");
+                    string fileName = $"generated_{DateTime.Now:yyyyMMddHHmmss}.jpg";
 
-                    if (answer?.ToLower() == "y")
+                    bool downloaded = await DownloadImageAsync(token, imageId, fileName);
+
+                    if (downloaded)
                     {
-                        Console.WriteLine("Скачивание изображения...");
-                        bool downloaded = await DownloadImageAsync(token, imageId, "generated_image.jpg");
+                        Console.WriteLine($"✓ Изображение успешно скачано: {fileName}");
 
-                        if (downloaded)
+                        // Проверяем размер файла
+                        if (File.Exists(fileName))
                         {
-                            Console.WriteLine("Изображение успешно скачано в файл generated_image.jpg");
+                            FileInfo fileInfo = new FileInfo(fileName);
+                            Console.WriteLine($"Размер файла: {fileInfo.Length} байт");
+
+                            // Предлагаем установить обои
+                            Console.WriteLine();
+                            Console.Write("Хотите установить изображение как обои? (y/n): ");
+                            string answer = Console.ReadLine();
+
+                            if (answer?.ToLower() == "y")
+                            {
+                                try
+                                {
+                                    // Используем WallpaperSetter из WPF проекта
+                                    SetWallpaper(fileName);
+                                    Console.WriteLine("✓ Обои успешно установлены!");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"✗ Ошибка установки обоев: {ex.Message}");
+                                }
+                            }
                         }
+                    }
+                    else
+                    {
+                        Console.WriteLine("✗ Не удалось скачать изображение");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Ошибка при генерации изображения");
+                    Console.WriteLine("✗ Ошибка при генерации изображения");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Произошла ошибка: {ex.Message}");
+                Console.WriteLine($"✗ Произошла ошибка: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
             }
 
             Console.WriteLine();
@@ -84,7 +113,7 @@ namespace APIGigaChatImage
             Console.ReadKey();
         }
 
-        // Метод для получения токена (уже есть)
+        // Метод для получения токена
         public static async Task<string> GetToken(string rqUID, string bearer)
         {
             string returnToken = null;
@@ -92,94 +121,128 @@ namespace APIGigaChatImage
 
             using (HttpClientHandler handler = new HttpClientHandler())
             {
-                handler.ServerCertificateCustomValidationCallback = (message, sert, chain, sslPolicyErrors) => true;
+                // Важно: отключаем проверку SSL для тестового сервера
+                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
 
                 using (HttpClient client = new HttpClient(handler))
                 {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
-
-                    request.Headers.Add("Accept", "application/json");
-                    request.Headers.Add("RqUID", rqUID);
-                    request.Headers.Add("Authorization", $"Bearer {bearer}");
-
-                    var data = new List<KeyValuePair<string, string>>
+                    try
                     {
-                        new KeyValuePair<string, string>("scope", "GIGACHAT_API_PERS")
-                    };
+                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
 
-                    request.Content = new FormUrlEncodedContent(data);
+                        request.Headers.Add("Accept", "application/json");
+                        request.Headers.Add("RqUID", rqUID);
+                        request.Headers.Add("Authorization", $"Bearer {bearer}");
 
-                    HttpResponseMessage response = await client.SendAsync(request);
+                        var data = new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("scope", "GIGACHAT_API_PERS")
+                        };
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string responseContent = await response.Content.ReadAsStringAsync();
-                        ResponseToken token = JsonConvert.DeserializeObject<ResponseToken>(responseContent);
+                        request.Content = new FormUrlEncodedContent(data);
 
-                        returnToken = token.access_token;
+                        Console.WriteLine($"Отправка запроса на {url}");
+                        HttpResponseMessage response = await client.SendAsync(request);
+
+                        Console.WriteLine($"Статус ответа: {response.StatusCode}");
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            string responseContent = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"Ответ сервера: {responseContent}");
+
+                            ResponseToken token = JsonConvert.DeserializeObject<ResponseToken>(responseContent);
+                            returnToken = token.access_token;
+                        }
+                        else
+                        {
+                            string errorContent = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"Ошибка получения токена: {response.StatusCode}");
+                            Console.WriteLine($"Детали ошибки: {errorContent}");
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Console.WriteLine($"Ошибка получения токена: {response.StatusCode}");
+                        Console.WriteLine($"Исключение при получении токена: {ex.Message}");
                     }
                 }
             }
             return returnToken;
         }
 
-        // Шаг 9: Метод для генерации изображения (принимает токен и промпт)
+        // Метод для генерации изображения
         public static async Task<string> GenerateImageAsync(string token, string prompt)
         {
             string imageId = null;
-            string url = "https://gigachat.devices.sberbank.ru/api/v1/images/generations";
+
+            // Пробуем разные URL API
+            string[] apiUrls = {
+                "https://gigachat.devices.sberbank.ru/api/v1/images/generations",
+                "https://developers.sber.ru/gigachat/api/v1/images/generations"
+            };
 
             using (HttpClientHandler handler = new HttpClientHandler())
             {
-                handler.ServerCertificateCustomValidationCallback = (message, sert, chain, sslPolicyErrors) => true;
+                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
 
                 using (HttpClient client = new HttpClient(handler))
                 {
-                    // Подготавливаем запрос
-                    var requestData = new
+                    foreach (string url in apiUrls)
                     {
-                        model = "GigaChat:latest",
-                        prompt = prompt,
-                        n = 1,
-                        size = "1024x1024"
-                    };
-
-                    string json = JsonConvert.SerializeObject(requestData);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    // Добавляем заголовок с токеном
-                    client.DefaultRequestHeaders.Authorization =
-                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-                    client.DefaultRequestHeaders.Add("Accept", "application/json");
-
-                    Console.WriteLine($"Отправка запроса на генерацию с промптом: {prompt}");
-
-                    HttpResponseMessage response = await client.PostAsync(url, content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string responseContent = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"Ответ API: {responseContent}");
-
-                        // Десериализуем ответ
-                        var imageResponse = JsonConvert.DeserializeObject<ImageGenerationResponse>(responseContent);
-
-                        if (imageResponse?.data?.Count > 0)
+                        try
                         {
-                            imageId = imageResponse.data[0].id;
-                            Console.WriteLine($"URL изображения: {imageResponse.data[0].url}");
+                            Console.WriteLine($"Попытка подключения к: {url}");
+
+                            var requestData = new
+                            {
+                                model = "GigaChat",
+                                prompt = prompt,
+                                n = 1,
+                                size = "1024x1024"
+                            };
+
+                            string json = JsonConvert.SerializeObject(requestData);
+                            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                            // Добавляем заголовки
+                            client.DefaultRequestHeaders.Authorization =
+                                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                            client.DefaultRequestHeaders.Add("Accept", "application/json");
+
+                            // Пробуем добавить дополнительные заголовки
+                            client.DefaultRequestHeaders.Add("X-Request-ID", Guid.NewGuid().ToString());
+
+                            Console.WriteLine($"Отправка запроса с промптом: {prompt}");
+                            HttpResponseMessage response = await client.PostAsync(url, content);
+
+                            Console.WriteLine($"Статус ответа: {response.StatusCode}");
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                string responseContent = await response.Content.ReadAsStringAsync();
+                                Console.WriteLine($"Успешный ответ от {url}");
+
+                                var imageResponse = JsonConvert.DeserializeObject<ImageGenerationResponse>(responseContent);
+
+                                if (imageResponse?.data?.Count > 0)
+                                {
+                                    imageId = imageResponse.data[0].id;
+                                    Console.WriteLine($"ID изображения: {imageId}");
+                                    Console.WriteLine($"URL изображения: {imageResponse.data[0].url}");
+                                    break; // Успешно, выходим из цикла
+                                }
+                            }
+                            else
+                            {
+                                string errorContent = await response.Content.ReadAsStringAsync();
+                                Console.WriteLine($"Ошибка от {url}: {response.StatusCode}");
+                                Console.WriteLine($"Детали: {errorContent}");
+                            }
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Ошибка генерации изображения: {response.StatusCode}");
-                        string errorContent = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"Ошибка: {errorContent}");
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Исключение при подключении к {url}: {ex.Message}");
+                        }
                     }
                 }
             }
@@ -187,37 +250,63 @@ namespace APIGigaChatImage
             return imageId;
         }
 
-        // Дополнительный метод для скачивания изображения (по заданию)
+        // Метод для скачивания изображения
         public static async Task<bool> DownloadImageAsync(string token, string imageId, string filePath)
         {
             try
             {
-                // Сначала получаем информацию об изображении
-                string infoUrl = $"https://gigachat.devices.sberbank.ru/api/v1/images/{imageId}";
+                Console.WriteLine($"Скачивание изображения ID: {imageId}");
+
+                // Пробуем разные методы получения URL
+                string[] infoUrls = {
+                    $"https://gigachat.devices.sberbank.ru/api/v1/images/{imageId}",
+                    $"https://developers.sber.ru/gigachat/api/v1/images/{imageId}"
+                };
 
                 using (HttpClientHandler handler = new HttpClientHandler())
                 {
-                    handler.ServerCertificateCustomValidationCallback = (message, sert, chain, sslPolicyErrors) => true;
+                    handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
 
                     using (HttpClient client = new HttpClient(handler))
                     {
-                        client.DefaultRequestHeaders.Authorization =
-                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        string imageUrl = null;
 
-                        // Получаем информацию об изображении
-                        HttpResponseMessage infoResponse = await client.GetAsync(infoUrl);
-
-                        if (infoResponse.IsSuccessStatusCode)
+                        foreach (string infoUrl in infoUrls)
                         {
-                            string infoContent = await infoResponse.Content.ReadAsStringAsync();
-                            var imageInfo = JsonConvert.DeserializeObject<ImageInfoResponse>(infoContent);
-
-                            if (!string.IsNullOrEmpty(imageInfo?.url))
+                            try
                             {
-                                // Скачиваем изображение по URL
-                                byte[] imageData = await client.GetByteArrayAsync(imageInfo.url);
+                                client.DefaultRequestHeaders.Authorization =
+                                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-                                // Сохраняем в файл
+                                Console.WriteLine($"Запрос информации: {infoUrl}");
+                                HttpResponseMessage infoResponse = await client.GetAsync(infoUrl);
+
+                                if (infoResponse.IsSuccessStatusCode)
+                                {
+                                    string infoContent = await infoResponse.Content.ReadAsStringAsync();
+                                    var imageInfo = JsonConvert.DeserializeObject<ImageInfoResponse>(infoContent);
+
+                                    if (!string.IsNullOrEmpty(imageInfo?.url))
+                                    {
+                                        imageUrl = imageInfo.url;
+                                        Console.WriteLine($"URL для скачивания найден: {imageUrl}");
+                                        break;
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Ошибка запроса информации: {ex.Message}");
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(imageUrl))
+                        {
+                            // Скачиваем изображение
+                            byte[] imageData = await client.GetByteArrayAsync(imageUrl);
+
+                            if (imageData != null && imageData.Length > 0)
+                            {
                                 File.WriteAllBytes(filePath, imageData);
                                 return true;
                             }
@@ -227,10 +316,51 @@ namespace APIGigaChatImage
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при скачивании изображения: {ex.Message}");
+                Console.WriteLine($"Ошибка скачивания: {ex.Message}");
             }
 
             return false;
         }
+
+        // Метод для установки обоев (аналогично WPF)
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+        private static extern int SystemParametersInfo(
+            int uAction,
+            int uParam,
+            string lpvParam,
+            int fuWinIni);
+
+        private const int SPI_SETDESKWALLPAPER = 20;
+        private const int SPIF_UPDATEINIFILE = 0x01;
+        private const int SPIF_SENDWININICHANGE = 0x02;
+
+        private static void SetWallpaper(string imagePath)
+        {
+            SystemParametersInfo(
+                SPI_SETDESKWALLPAPER,
+                0,
+                imagePath,
+                SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
+        }
+    }
+
+    // Классы для десериализации
+    public class ImageGenerationResponse
+    {
+        public long created { get; set; }
+        public List<ImageData> data { get; set; }
+
+        public class ImageData
+        {
+            public string url { get; set; }
+            public string id { get; set; }
+        }
+    }
+
+    public class ImageInfoResponse
+    {
+        public string id { get; set; }
+        public string url { get; set; }
+        public string status { get; set; }
     }
 }

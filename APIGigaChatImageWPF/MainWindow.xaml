@@ -1,14 +1,14 @@
 ﻿<Window x:Class="APIGigaChatImageWPF.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:APIGigaChatImageWPF"
-        mc:Ignorable="d"
-        Title="Генератор обоев GigaChat" 
-        Height="750" Width="900"
-        WindowStartupLocation="CenterScreen"
-        Background="#F5F5F7">
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:local="clr-namespace:APIGigaChatImageWPF"
+            mc:Ignorable="d"
+            Title="Генератор обоев GigaChat" 
+            Height="750" Width="900"
+            WindowStartupLocation="CenterScreen"
+            Background="#F5F5F7">
 
     <Window.Resources>
         <Style x:Key="TitleStyle" TargetType="TextBlock">
@@ -68,9 +68,9 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}">
+                                    CornerRadius="8" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0"/>
                         </Border>
                     </ControlTemplate>
@@ -104,16 +104,16 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="border" 
-                                Background="White" 
-                                CornerRadius="8" 
-                                BorderThickness="2" 
-                                BorderBrush="#E0E0E0"
-                                Padding="15,10">
+                                    Background="White" 
+                                    CornerRadius="8" 
+                                    BorderThickness="2" 
+                                    BorderBrush="#E0E0E0"
+                                    Padding="15,10">
                             <StackPanel>
                                 <TextBlock Text="{TemplateBinding Content}" 
-                                           FontSize="14" 
-                                           FontWeight="SemiBold"
-                                           HorizontalAlignment="Center"/>
+                                               FontSize="14" 
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -139,32 +139,32 @@
                     <TextBlock Text="🎨" FontSize="40" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                     <TextBlock Text="Генератор обоев GigaChat" Style="{StaticResource TitleStyle}"/>
                     <TextBlock Text="Создавайте уникальные обои с помощью ИИ и устанавливайте их на рабочий стол" 
-                               Style="{StaticResource SubtitleStyle}"/>
+                                   Style="{StaticResource SubtitleStyle}"/>
                 </StackPanel>
 
                 <!-- Режимы работы -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="Режим работы" 
-                                   FontSize="16" 
-                                   FontWeight="SemiBold" 
-                                   Margin="0,0,0,15"/>
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,15"/>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <!-- ВАЖНО: Добавлены x:Name для RadioButton -->
                             <RadioButton x:Name="ManualModeRadio" 
-                                       Content="Ручной режим" 
-                                       GroupName="Mode" 
-                                       IsChecked="True"
-                                       Style="{StaticResource RadioButtonCardStyle}"
-                                       Margin="0,0,10,0"
-                                       Checked="ModeRadioButton_Checked"/>
+                                           Content="Ручной режим" 
+                                           GroupName="Mode" 
+                                           IsChecked="True"
+                                           Style="{StaticResource RadioButtonCardStyle}"
+                                           Margin="0,0,10,0"
+                                           Checked="ModeRadioButton_Checked"/>
 
                             <RadioButton x:Name="CalendarModeRadio" 
-                                       Content="Календарный режим" 
-                                       GroupName="Mode" 
-                                       Style="{StaticResource RadioButtonCardStyle}"
-                                       Checked="ModeRadioButton_Checked"/>
+                                           Content="Календарный режим" 
+                                           GroupName="Mode" 
+                                           Style="{StaticResource RadioButtonCardStyle}"
+                                           Checked="ModeRadioButton_Checked"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -173,24 +173,24 @@
                 <Border x:Name="ManualModePanel" Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="Параметры генерации" 
-                                   FontSize="16" 
-                                   FontWeight="SemiBold" 
-                                   Margin="0,0,0,15"/>
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,15"/>
 
                         <Label Content="Описание обоев:" Style="{StaticResource LabelStyle}"/>
                         <TextBox x:Name="PromptTextBox" 
-                                Height="80" 
-                                TextWrapping="Wrap" 
-                                AcceptsReturn="True"
-                                VerticalScrollBarVisibility="Auto"
-                                FontSize="14"
-                                Padding="10"
-                                Text="Красивые обои на рабочий стол, горный пейзаж, закат"/>
+                                    Height="80" 
+                                    TextWrapping="Wrap" 
+                                    AcceptsReturn="True"
+                                    VerticalScrollBarVisibility="Auto"
+                                    FontSize="14"
+                                    Padding="10"
+                                    Text="Красивые обои на рабочий стол, горный пейзаж, закат"/>
 
                         <Label Content="Стиль:" Style="{StaticResource LabelStyle}"/>
                         <ComboBox x:Name="StyleComboBox" 
-                                 Style="{StaticResource ComboBoxStyle}"
-                                 SelectedIndex="0">
+                                     Style="{StaticResource ComboBoxStyle}"
+                                     SelectedIndex="0">
                             <ComboBoxItem>реализм</ComboBoxItem>
                             <ComboBoxItem>цифровое искусство</ComboBoxItem>
                             <ComboBoxItem>живопись</ComboBoxItem>
@@ -201,8 +201,8 @@
 
                         <Label Content="Цветовая палитра:" Style="{StaticResource LabelStyle}"/>
                         <ComboBox x:Name="ColorComboBox" 
-                                 Style="{StaticResource ComboBoxStyle}"
-                                 SelectedIndex="0">
+                                     Style="{StaticResource ComboBoxStyle}"
+                                     SelectedIndex="0">
                             <ComboBoxItem>яркая</ComboBoxItem>
                             <ComboBoxItem>пастельная</ComboBoxItem>
                             <ComboBoxItem>монохромная</ComboBoxItem>
@@ -214,8 +214,8 @@
 
                         <Label Content="Соотношение сторон:" Style="{StaticResource LabelStyle}"/>
                         <ComboBox x:Name="AspectRatioComboBox" 
-                                 Style="{StaticResource ComboBoxStyle}"
-                                 SelectedIndex="0">
+                                     Style="{StaticResource ComboBoxStyle}"
+                                     SelectedIndex="0">
                             <ComboBoxItem>16:9</ComboBoxItem>
                             <ComboBoxItem>16:10</ComboBoxItem>
                             <ComboBoxItem>4:3</ComboBoxItem>
@@ -226,63 +226,63 @@
 
                         <!-- ВАЖНО: Добавлен x:Name для кнопки генерации -->
                         <Button x:Name="GenerateButton" 
-                               Content="🎨 Сгенерировать обои" 
-                               Style="{StaticResource PrimaryButtonStyle}"
-                               Click="GenerateButton_Click"/>
+                                   Content="🎨 Сгенерировать обои" 
+                                   Style="{StaticResource PrimaryButtonStyle}"
+                                   Click="GenerateButton_Click"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Календарный режим -->
                 <Border x:Name="CalendarModePanel" 
-                        Style="{StaticResource CardStyle}" 
-                        Visibility="Collapsed">
+                            Style="{StaticResource CardStyle}" 
+                            Visibility="Collapsed">
                     <StackPanel>
                         <TextBlock Text="Календарный режим" 
-                                   FontSize="16" 
-                                   FontWeight="SemiBold" 
-                                   Margin="0,0,0,15"
-                                   Foreground="#0078D4"/>
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,15"
+                                       Foreground="#0078D4"/>
 
                         <Label Content="Выберите праздник:" Style="{StaticResource LabelStyle}"/>
                         <ComboBox x:Name="HolidayComboBox" 
-                                 Style="{StaticResource ComboBoxStyle}"
-                                 DisplayMemberPath="Name"
-                                 SelectionChanged="HolidayComboBox_SelectionChanged"/>
+                                     Style="{StaticResource ComboBoxStyle}"
+                                     DisplayMemberPath="Name"
+                                     SelectionChanged="HolidayComboBox_SelectionChanged"/>
 
                         <StackPanel x:Name="HolidayInfoPanel" Margin="0,15,0,0" Visibility="Collapsed">
                             <TextBlock x:Name="HolidayNameText" 
-                                     FontSize="16" 
-                                     FontWeight="SemiBold"
-                                     Foreground="#0078D4"/>
+                                         FontSize="16" 
+                                         FontWeight="SemiBold"
+                                         Foreground="#0078D4"/>
 
                             <TextBlock x:Name="HolidayDescriptionText" 
-                                     TextWrapping="Wrap"
-                                     Margin="0,5,0,0"
-                                     Foreground="#666666"/>
+                                         TextWrapping="Wrap"
+                                         Margin="0,5,0,0"
+                                         Foreground="#666666"/>
 
                             <TextBlock x:Name="HolidayDateText" 
-                                     FontStyle="Italic"
-                                     Margin="0,10,0,0"
-                                     Foreground="#888888"/>
+                                         FontStyle="Italic"
+                                         Margin="0,10,0,0"
+                                         Foreground="#888888"/>
                         </StackPanel>
 
                         <Border x:Name="GeneratedPromptPanel" 
-                                Style="{StaticResource StatusBoxStyle}" 
-                                Margin="0,15,0,0"
-                                Visibility="Collapsed">
+                                    Style="{StaticResource StatusBoxStyle}" 
+                                    Margin="0,15,0,0"
+                                    Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock Text="📝 Сгенерированный промпт:" 
-                                           FontWeight="SemiBold"
-                                           Margin="0,0,0,5"/>
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,5"/>
                                 <TextBlock x:Name="GeneratedPromptText" 
-                                         TextWrapping="Wrap"
-                                         FontStyle="Italic"/>
+                                             TextWrapping="Wrap"
+                                             FontStyle="Italic"/>
                             </StackPanel>
                         </Border>
 
                         <Button Content="🎨 Сгенерировать тематические обои" 
-                               Style="{StaticResource PrimaryButtonStyle}"
-                               Click="GenerateButton_Click"/>
+                                   Style="{StaticResource PrimaryButtonStyle}"
+                                   Click="GenerateButton_Click"/>
                     </StackPanel>
                 </Border>
 
@@ -290,54 +290,54 @@
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="Результат" 
-                                   FontSize="16" 
-                                   FontWeight="SemiBold" 
-                                   Margin="0,0,0,15"/>
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,15"/>
 
                         <!-- Предпросмотр изображения -->
                         <Border BorderBrush="#E0E0E0" 
-                               BorderThickness="1" 
-                               Height="250" 
-                               CornerRadius="8" 
-                               Margin="0,0,0,15"
-                               Background="#F8F8F8">
+                                   BorderThickness="1" 
+                                   Height="250" 
+                                   CornerRadius="8" 
+                                   Margin="0,0,0,15"
+                                   Background="#F8F8F8">
                             <Grid>
                                 <Image x:Name="PreviewImage" 
-                                      Stretch="Uniform"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"/>
+                                          Stretch="Uniform"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center"/>
 
                                 <!-- Плейсхолдер когда нет изображения -->
                                 <TextBlock x:Name="PreviewPlaceholder" 
-                                         Text="Здесь будет отображаться сгенерированное изображение" 
-                                         Foreground="#999999"
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"
-                                         TextAlignment="Center"/>
+                                             Text="Здесь будет отображаться сгенерированное изображение" 
+                                             Foreground="#999999"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             TextAlignment="Center"/>
                             </Grid>
                         </Border>
 
                         <!-- Кнопки действий -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button x:Name="DownloadButton" 
-                                   Content="💾 Скачать" 
-                                   Style="{StaticResource SecondaryButtonStyle}"
-                                   IsEnabled="False"
-                                   Click="DownloadButton_Click"/>
+                                       Content="💾 Скачать" 
+                                       Style="{StaticResource SecondaryButtonStyle}"
+                                       IsEnabled="False"
+                                       Click="DownloadButton_Click"/>
 
                             <Button x:Name="SetWallpaperButton" 
-                                   Content="🖼️ Установить обои" 
-                                   Style="{StaticResource SecondaryButtonStyle}"
-                                   IsEnabled="False"
-                                   Click="SetWallpaperButton_Click"/>
+                                       Content="🖼️ Установить обои" 
+                                       Style="{StaticResource SecondaryButtonStyle}"
+                                       IsEnabled="False"
+                                       Click="SetWallpaperButton_Click"/>
                         </StackPanel>
 
                         <!-- Статус -->
                         <Border Style="{StaticResource StatusBoxStyle}" Margin="0,15,0,0">
                             <TextBlock x:Name="StatusTextBlock" 
-                                     Text="Готов к работе. Выберите параметры и нажмите 'Сгенерировать обои'."
-                                     TextWrapping="Wrap"
-                                     FontSize="14"/>
+                                         Text="Готов к работе. Выберите параметры и нажмите 'Сгенерировать обои'."
+                                         TextWrapping="Wrap"
+                                         FontSize="14"/>
                         </Border>
                     </StackPanel>
                 </Border>
@@ -346,17 +346,17 @@
                 <Border Style="{StaticResource CardStyle}" Background="#F0F7FF">
                     <StackPanel>
                         <TextBlock Text="ℹ️ Информация" 
-                                   FontSize="14" 
-                                   FontWeight="SemiBold" 
-                                   Margin="0,0,0,10"
-                                   Foreground="#0078D4"/>
+                                       FontSize="14" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,10"
+                                       Foreground="#0078D4"/>
 
                         <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#666666">
-                            <Run Text="• Для оценки 'Хорошо': WPF приложение с выбором параметров генерации"/>
-                            <LineBreak/>
-                            <Run Text="• Для оценки 'Отлично': Реализован календарный режим с тематическими обоями к праздникам"/>
-                            <LineBreak/>
-                            <Run Text="• Используется GigaChat API для генерации изображений"/>
+                                <Run Text="• Для оценки 'Хорошо': WPF приложение с выбором параметров генерации"/>
+                                <LineBreak/>
+                                <Run Text="• Для оценки 'Отлично': Реализован календарный режим с тематическими обоями к праздникам"/>
+                                <LineBreak/>
+                                <Run Text="• Используется GigaChat API для генерации изображений"/>
                         </TextBlock>
                     </StackPanel>
                 </Border>

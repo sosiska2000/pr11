@@ -1,5 +1,4 @@
-﻿// App.xaml.cs
-using System;
+﻿using System;
 using System.IO;
 using System.Windows;
 
@@ -13,7 +12,13 @@ namespace APIGigaChatImageWPF
 
             // Создаем папку для сохранения изображений
             string savePath = System.Configuration.ConfigurationManager.AppSettings["SavePath"];
-            if (!string.IsNullOrEmpty(savePath) && !Directory.Exists(savePath))
+            if (string.IsNullOrEmpty(savePath))
+            {
+                savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                                       "GigaChat Wallpapers");
+            }
+
+            if (!Directory.Exists(savePath))
             {
                 Directory.CreateDirectory(savePath);
             }

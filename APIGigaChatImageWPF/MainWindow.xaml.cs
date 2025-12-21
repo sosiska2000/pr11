@@ -1,12 +1,13 @@
-﻿using System;
+﻿using APIGigaChatImageWPF.Classes;
+using APIGigaChatImageWPF.Services;
+using Microsoft.Win32;
+using System;
+using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
-using APIGigaChatImageWPF.Services;
-using APIGigaChatImageWPF.Classes;
 
 namespace APIGigaChatImageWPF
 {
@@ -16,7 +17,6 @@ namespace APIGigaChatImageWPF
         private CalendarService _calendarService;
         private WallpaperSetter _wallpaperSetter;
 
-        private byte[] _lastImageData;
         private string _lastImagePath;
 
         public MainWindow()
@@ -50,13 +50,11 @@ namespace APIGigaChatImageWPF
 
         private void ModeRadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            // Проверка на null перед использованием
             if (CalendarModeRadio == null || ManualModeRadio == null)
                 return;
 
             bool isCalendarMode = CalendarModeRadio.IsChecked == true;
 
-            // Показываем/скрываем панели
             if (CalendarModePanel != null)
                 CalendarModePanel.Visibility = isCalendarMode ? Visibility.Visible : Visibility.Collapsed;
 
@@ -71,7 +69,6 @@ namespace APIGigaChatImageWPF
 
         private void HolidayComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Проверка на null
             if (CalendarModeRadio == null || CalendarModeRadio.IsChecked != true || HolidayComboBox.SelectedItem == null)
                 return;
 
@@ -94,7 +91,6 @@ namespace APIGigaChatImageWPF
                 if (HolidayInfoPanel != null)
                     HolidayInfoPanel.Visibility = Visibility.Visible;
 
-                // Генерируем промпт
                 string prompt = _calendarService.GeneratePromptForHoliday(holiday);
 
                 if (GeneratedPromptText != null)
@@ -109,7 +105,7 @@ namespace APIGigaChatImageWPF
         {
             try
             {
-                StatusTextBlock.Text = "⏳ Генерация изображения...";
+                StatusTextBlock.Text = "⏳ Начинаю генерацию изображения...";
                 GenerateButton.IsEnabled = false;
                 DownloadButton.IsEnabled = false;
                 SetWallpaperButton.IsEnabled = false;
@@ -117,11 +113,12 @@ namespace APIGigaChatImageWPF
                 string prompt;
 
                 // Выбираем промпт в зависимости от режима
-                if (CalendarModeRadio != null && CalendarModeRadio.IsChecked == true)
+                if (CalendarModeRadio.IsChecked == true)
                 {
                     if (HolidayComboBox.SelectedItem is Holiday holiday)
                     {
                         prompt = _calendarService.GeneratePromptForHoliday(holiday);
+                        StatusTextBlock.Text = $"🎉 Создаю обои к празднику: {holiday.Name}\n⏳ Генерация...";
                     }
                     else
                     {
@@ -133,50 +130,58 @@ namespace APIGigaChatImageWPF
                 else
                 {
                     prompt = PromptTextBox.Text;
+                    if (string.IsNullOrWhiteSpace(prompt) || prompt == "Красивые обои на рабочий стол, горный пейзаж, закат")
+                    {
+                        prompt = PromptTextBox.Text; // Берем как есть
+                    }
+
                     if (string.IsNullOrWhiteSpace(prompt))
                     {
-                        StatusTextBlock.Text = "❌ Введите описание обоев";
-                        GenerateButton.IsEnabled = true;
-                        return;
+                        prompt = "Красивые обои на рабочий стол, горный пейзаж, закат";
                     }
+
+                    // Получаем параметры для ручного режима
+                    string style = ((ComboBoxItem)StyleComboBox.SelectedItem).Content.ToString();
+                    string colorPalette = ((ComboBoxItem)ColorComboBox.SelectedItem).Content.ToString();
+                    string aspectRatio = ((ComboBoxItem)AspectRatioComboBox.SelectedItem).Content.ToString();
+
+                    // Создаем промпт с параметрами
+                    prompt = $"{prompt}, стиль: {style}, цветовая палитра: {colorPalette}, " +
+                            $"соотношение сторон: {aspectRatio}, высокое качество, детализированное, " +
+                            "профессиональная графика, обои рабочего стола";
+
+                    StatusTextBlock.Text = "⏳ Генерация изображения...";
                 }
 
-                // Получаем параметры
-                string style = ((ComboBoxItem)StyleComboBox.SelectedItem).Content.ToString();
-                string colorPalette = ((ComboBoxItem)ColorComboBox.SelectedItem).Content.ToString();
-                string aspectRatio = ((ComboBoxItem)AspectRatioComboBox.SelectedItem).Content.ToString();
+                // Генерируем и скачиваем изображение за один вызов
+                StatusTextBlock.Text = "⏳ Отправка запроса в GigaChat...";
+                _lastImagePath = await _apiService.GenerateAndSaveImageAsync(prompt);
 
-                // Генерируем изображение
-                var response = await _apiService.GenerateImageAsync(prompt, style, colorPalette, aspectRatio);
-
-                if (response?.data?.Count > 0)
+                if (!string.IsNullOrEmpty(_lastImagePath) && File.Exists(_lastImagePath))
                 {
-                    // Скачиваем изображение
-                    var imageUrl = response.data[0].url;
-                    _lastImageData = await _apiService.DownloadImageAsync(imageUrl);
-
-                    // Сохраняем временно
-                    _lastImagePath = Path.Combine(Path.GetTempPath(),
-                        $"wallpaper_{DateTime.Now:yyyyMMddHHmmss}.jpg");
-
-                    // Используем синхронную версию для .NET Framework
-                    File.WriteAllBytes(_lastImagePath, _lastImageData);
-
                     // Показываем предпросмотр
                     await ShowPreviewImage(_lastImagePath);
 
                     StatusTextBlock.Text = "✅ Изображение сгенерировано успешно!";
                     DownloadButton.IsEnabled = true;
                     SetWallpaperButton.IsEnabled = true;
+
+                    // Показываем информацию о файле
+                    var fileInfo = new FileInfo(_lastImagePath);
+                    StatusTextBlock.Text += $"\nФайл: {Path.GetFileName(_lastImagePath)} ({fileInfo.Length / 1024} KB)";
                 }
                 else
                 {
-                    StatusTextBlock.Text = "❌ Ошибка: изображение не сгенерировано";
+                    StatusTextBlock.Text = "❌ Не удалось создать изображение";
                 }
             }
             catch (Exception ex)
             {
                 StatusTextBlock.Text = $"❌ Ошибка: {ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    StatusTextBlock.Text += $"\nВнутренняя ошибка: {ex.InnerException.Message}";
+                }
             }
             finally
             {
@@ -186,13 +191,13 @@ namespace APIGigaChatImageWPF
 
         private async Task ShowPreviewImage(string imagePath)
         {
-            await Task.Run(() =>
+            try
             {
-                Dispatcher.Invoke(() =>
+                if (File.Exists(imagePath))
                 {
-                    try
+                    await Dispatcher.InvokeAsync(() =>
                     {
-                        if (File.Exists(imagePath))
+                        try
                         {
                             var bitmap = new BitmapImage();
                             bitmap.BeginInit();
@@ -201,28 +206,30 @@ namespace APIGigaChatImageWPF
                             bitmap.EndInit();
 
                             PreviewImage.Source = bitmap;
-
-                            if (PreviewPlaceholder != null)
-                                PreviewPlaceholder.Visibility = Visibility.Collapsed;
+                            PreviewPlaceholder.Visibility = Visibility.Collapsed;
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            StatusTextBlock.Text = "❌ Файл изображения не найден";
+                            StatusTextBlock.Text = $"❌ Ошибка создания предпросмотра: {ex.Message}";
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        StatusTextBlock.Text = $"❌ Ошибка загрузки изображения: {ex.Message}";
-                    }
-                });
-            });
+                    });
+                }
+                else
+                {
+                    StatusTextBlock.Text = "❌ Файл изображения не найден";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusTextBlock.Text = $"❌ Ошибка загрузки изображения: {ex.Message}";
+            }
         }
 
         private void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (_lastImageData != null && !string.IsNullOrEmpty(_lastImagePath))
+                if (!string.IsNullOrEmpty(_lastImagePath) && File.Exists(_lastImagePath))
                 {
                     var saveDialog = new SaveFileDialog
                     {
@@ -233,8 +240,7 @@ namespace APIGigaChatImageWPF
 
                     if (saveDialog.ShowDialog() == true)
                     {
-                        // Используем синхронную версию
-                        File.WriteAllBytes(saveDialog.FileName, _lastImageData);
+                        File.Copy(_lastImagePath, saveDialog.FileName, true);
                         StatusTextBlock.Text = $"✅ Изображение сохранено: {Path.GetFileName(saveDialog.FileName)}";
                     }
                 }

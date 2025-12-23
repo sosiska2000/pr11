@@ -1,27 +1,49 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices; // Использование атрибутов и классов для взаимодействия с неуправляемым кодом (WinAPI)
 
-namespace APIGigaChatImageWPF.Classes
+namespace APIGigaChatImageWPF.Classes // Пространство имен для классов WPF-приложения работы с обоями
 {
+    // Класс для установки изображения в качестве обоев рабочего стола Windows
+    // Использует WinAPI функции для изменения системных параметров
     public class WallpaperSetter
     {
+        // Импорт функции SystemParametersInfo из библиотеки user32.dll
+        // Эта функция используется для получения и установки системных параметров Windows
+        // CharSet.Auto автоматически выбирает кодировку символов (ANSI/Unicode) в зависимости от платформы
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        // Объявление сигнатуры импортируемой функции
         private static extern int SystemParametersInfo(
-            int uAction,
-            int uParam,
-            string lpvParam,
-            int fuWinIni);
+            int uAction,      // Действие, которое нужно выполнить (в нашем случае - установка обоев)
+            int uParam,       // Дополнительный параметр (не используется в нашем случае)
+            string lpvParam,  // Путь к файлу изображения для установки в качестве обоев
+            int fuWinIni      // Флаги, определяющие как применять изменения
+        );
 
+        // Константа, определяющая действие "установить обои рабочего стола"
+        // Значение 20 соответствует системному действию SPI_SETDESKWALLPAPER
         private const int SPI_SETDESKWALLPAPER = 20;
+
+        // Флаг, указывающий на необходимость обновления файла инициализации Windows (win.ini)
+        // Значение 0x01 в шестнадцатеричном формате (1 в десятичном)
         private const int SPIF_UPDATEINIFILE = 0x01;
+
+        // Флаг, указывающий на необходимость отправки сообщения об изменении параметров всем окнам
+        // Значение 0x02 в шестнадцатеричном формате (2 в десятичном)
+        // Гарантирует, что все приложения узнают об изменении обоев
         private const int SPIF_SENDWININICHANGE = 0x02;
 
+        // Публичный метод для установки изображения в качестве обоев
         public void Set(string imagePath)
         {
+            // Вызов импортированной функции SystemParametersInfo с необходимыми параметрами
             SystemParametersInfo(
-                SPI_SETDESKWALLPAPER,
-                0,
-                imagePath,
-                SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
+                SPI_SETDESKWALLPAPER,  // Действие: установить обои
+                0,                     // Дополнительный параметр (не используется, поэтому 0)
+                imagePath,             // Путь к файлу изображения
+                                       // Комбинация флагов с помощью побитового OR (|):
+                                       // - Обновить файл win.ini
+                                       // - Отправить уведомление всем окнам об изменении
+                SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE
+            );
         }
     }
 }

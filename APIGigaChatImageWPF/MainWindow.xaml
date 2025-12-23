@@ -132,7 +132,7 @@
     </Window.Resources>
 
     <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20" Margin="0,0,0,-1001">
             <StackPanel>
                 <!-- Заголовок -->
                 <StackPanel Margin="0,0,0,20" HorizontalAlignment="Center">
@@ -339,25 +339,6 @@
                                      TextWrapping="Wrap"
                                      FontSize="14"/>
                         </Border>
-                    </StackPanel>
-                </Border>
-
-                <!-- Информация -->
-                <Border Style="{StaticResource CardStyle}" Background="#F0F7FF">
-                    <StackPanel>
-                        <TextBlock Text="ℹ️ Информация" 
-                                   FontSize="14" 
-                                   FontWeight="SemiBold" 
-                                   Margin="0,0,0,10"
-                                   Foreground="#0078D4"/>
-
-                        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#666666">
-                            <Run Text="• Для оценки 'Хорошо': WPF приложение с выбором параметров генерации"/>
-                            <LineBreak/>
-                            <Run Text="• Для оценки 'Отлично': Реализован календарный режим с тематическими обоями к праздникам"/>
-                            <LineBreak/>
-                            <Run Text="• Используется GigaChat API для генерации изображений"/>
-                        </TextBlock>
                     </StackPanel>
                 </Border>
             </StackPanel>
